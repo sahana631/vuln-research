@@ -11,8 +11,8 @@ A small function that parses a comma-separated string (`name,age,email`) into a 
 **The fix:** added explicit validation so both failure modes now raise one clean, intentional error instead of an unhandled exception.
 
 Run it:
-python mini_fuzzer.py
 
+    python mini_fuzzer.py
 
 ## Project 2: Command Injection (`vuln-ping.py`)
 
@@ -23,15 +23,29 @@ A small CLI tool that pings a hostname, built with a classic command injection f
 **The fix:** removed `shell=True` and passed the command as a list of arguments (`["ping", "-c", "1", hostname]`) instead of a string. The same injection input is now treated as one literal (invalid) hostname and fails safely, with no code execution.
 
 Run it:
-python vuln-ping.py
 
+    python vuln-ping.py
+
+## Project 3: Insecure Deserialization (`vuln_pickle.py`, `exploit_pickle.py`)
+
+A small function that loads "user preferences" from serialized data using `pickle.loads()`.
+
+**The exploit:** built a payload using Python's `__reduce__` method to hijack pickle's deserialization process, making it call `os.system()` and run an arbitrary shell command the moment the data was "loaded" — before the victim's code ever got a chance to inspect anything. Confirmed real command execution and username leakage, entirely inside what looked like a simple data-loading function.
+
+**The fix:** replaced `pickle` with `json` for deserialization. JSON can only represent plain data (strings, numbers, lists, dicts) — it has no mechanism to encode "run this code," so the same malicious payload now fails immediately, unable to even be parsed as valid JSON.
+
+Run it:
+
+    python vuln_pickle.py
+    python exploit_pickle.py
 
 ## Why this matters
 
-Both projects follow the same loop: build something with a real, common vulnerability class, prove it's exploitable, fix it properly, then reverify the fix actually closes the gap. This mirrors (at a much smaller scale) the discover → validate → protect pipeline used by automated vulnerability research tools.
+All three projects follow the same loop: build something with a real, common vulnerability class, prove it's exploitable, fix it properly, then reverify the fix actually closes the gap. This mirrors (at a much smaller scale) the discover → validate → protect pipeline used by automated vulnerability research tools.
 
 ## Setup
-python3 -m venv venv
-source venv/bin/activate
 
-No external dependencies — both projects use only the Python standard library.
+    python3 -m venv venv
+    source venv/bin/activate
+
+No external dependencies — all three projects use only the Python standard library.
